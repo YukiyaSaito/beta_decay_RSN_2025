@@ -25,9 +25,9 @@ Each file begins with a commented header (lines starting with `#`) that **define
 |-------------|------------------------------------------------------------------------------------------|-----------------------------------------------|
 | `N`         | Neutron number                                                                           | integer                                        |
 | `Z`         | Proton number                                                                            | integer                                        |
-| `E(beta)`   | Binding energy for the **minimum-energy** configuration found in `results.out`           | MeV                                            |
-| `beta2`     | Mass quadrupole deformation parameter β₂ at minimum-energy                              | dimensionless                                  |
-| `Q`         | β⁻ Q-value computed as `0.782 + B(Z,N) − B(Z+1,N−1)`                                     | MeV                                            |
+| `E(beta)`   | Binding energy for the **minimum-energy**                                                | MeV                                            |
+| `beta2`     | Mass quadrupole deformation parameter $\beta_2$ at minimum-energy                        | dimensionless                                  |
+| `Q`         | $\beta^-$ Q-value computed as `0.782 + B(Z,N) − B(Z+1,N−1)`                                     | MeV                                            |
 | `HL_log10`  | `log10(T_half / s)` for the **total** half-life                                         | base-10 logarithm of seconds                   |
 | `FF_percent`| Percent contribution of **first-forbidden (FF)** transitions to the **total decay rate** | %; computed from rates, clipped to            |
 
