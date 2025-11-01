@@ -39,7 +39,9 @@ Each file begins with a commented header (lines starting with `#`) that **define
 This directory contains simulation products (e.g., abundances, yields, trajectory diagnostics) used in the manuscript.  
 Each subfolder may include its own minimal README describing run settings (network, trajectory set, thermodynamic history, etc.).
 
-![r-process Y(A) evolution](./figs/r-process/ts_1_YA_evolution.gif)
+
+https://github.com/user-attachments/assets/64e085b1-71e1-494c-a82b-4bd62428634d
+
 
 ---
 ## Contact
