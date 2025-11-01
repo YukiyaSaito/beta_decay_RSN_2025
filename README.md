@@ -43,7 +43,7 @@ Each subfolder may include its own minimal README describing run settings (netwo
 
 
 
-https://github.com/user-attachments/assets/2af4ad3b-802b-44de-9fc2-fa833b9ba35c
+https://github.com/user-attachments/assets/7d44070e-04e6-4afd-bd33-09dc9ee76730
 
 
 
