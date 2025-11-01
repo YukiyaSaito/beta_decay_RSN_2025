@@ -40,7 +40,13 @@ This directory contains simulation products (e.g., abundances, yields, trajector
 Each subfolder may include its own minimal README describing run settings (network, trajectory set, thermodynamic history, etc.).
 
 
-https://github.com/user-attachments/assets/64e085b1-71e1-494c-a82b-4bd62428634d
+
+
+
+https://github.com/user-attachments/assets/2af4ad3b-802b-44de-9fc2-fa833b9ba35c
+
+
+
 
 
 ---
