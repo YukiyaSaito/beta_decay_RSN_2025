@@ -29,9 +29,9 @@ Each file begins with a commented header (lines starting with `#`) that **define
 | `beta2`     | Mass quadrupole deformation parameter $\beta_2$ at minimum-energy                        | dimensionless                                  |
 | `Q`         | $\beta^-$ Q-value computed as `0.782 + B(Z,N) − B(Z+1,N−1)`                                     | MeV                                            |
 | `HL_log10`  | `log10(T_half / s)` for the **total** half-life                                         | base-10 logarithm of seconds                   |
-| `FF_percent`| Percent contribution of **first-forbidden (FF)** transitions to the **total decay rate** | %; computed from rates, clipped to            |
+| `FF_percent`| Percent contribution of **first-forbidden (FF)** transitions to the **total decay rate** | %            |
 
-> Note: Strength function distribution is only given for a subset of 100 nuclei calculated with DD-PCX interaction. Strength functions for specific nuclei can be obtained by contacting the authors.  
+> Note: Strength function distribution is only given for a subset of 100 nuclei calculated with DD-PCX interaction as a test of contour for integration for odd-A and odd-odd nuclei. Strength functions for specific nuclei can be obtained by contacting the authors.  
 ---
 
 ### r-process outputs (`data/r-process`)
