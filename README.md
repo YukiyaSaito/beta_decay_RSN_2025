@@ -61,11 +61,6 @@ This directory contains **Gamow–Teller (GT)** and **first-forbidden (FF)** cha
 
 ---
 
-## Directory layout
-<NuclideTag>_<OP>K0.txt
-<NuclideTag><OP>K1.txt
-<NuclideTag><OP>_Total.txt
-
 ## File format
 - **Column 1:** excitation energy $E$ in **MeV** with respect to parent nucleus
 - **Column 2:** strength function $S(E)$
@@ -75,11 +70,11 @@ This directory contains **Gamow–Teller (GT)** and **first-forbidden (FF)** cha
   - `..._Total.txt` → $S_{K=0}(E) + 2 S_{K=1}(E)$
 
 ## Example figures
-Shown for ${}^{233}$W (```_W233``` in text format).
+Shown for $^{233}$W (```_W233``` in text format).
 **Gamow–Teller (GT)**
 ![GT strength example](data/strength_functions/GT_example.png)
 
-**First-forbidden \(1^- \)(FF)**
+**First-forbidden $1^-$(FF)**
 ![FF strength example](data/strength_functions/FF_example.png)
 
 ---
