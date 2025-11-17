@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive visualization of β-decay rates and r-process nucleosynthesis data from RHB + pnQRPA calculations">
+    <meta name="keywords" content="beta decay, nuclear physics, r-process, nucleosynthesis, QRPA, RHB">
+    <meta name="author" content="Ravlić, Saito, and Nazarewicz">
+    <title>β-Decay Data Explorer | RSN 2025</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="nuclei-list.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>β-Decay Data Explorer</h1>
+            <p class="subtitle">Large-scale calculations of β-decay rates and implications for r-process nucleosynthesis</p>
+            <p class="authors">Ravlić, Saito, and Nazarewicz (2025)</p>
+        </div>
+    </header>
+
+    <nav class="main-nav">
+        <div class="container">
+            <button class="nav-btn active" data-section="overview">Overview</button>
+            <button class="nav-btn" data-section="nuclear-chart">Nuclear Chart</button>
+            <button class="nav-btn" data-section="beta-decay">β-Decay Data</button>
+            <button class="nav-btn" data-section="strength-functions">Strength Functions</button>
+            <button class="nav-btn" data-section="about">About</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Overview Section -->
+        <section id="overview" class="section active">
+            <div class="hero-card">
+                <h2>Welcome to the β-Decay Data Explorer</h2>
+                <p>This interactive platform provides access to comprehensive β-decay datasets computed with axially deformed <strong>RHB + pnQRPA</strong> using the <strong>DD-PC1</strong> and <strong>DD-PCX</strong> interactions.</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">~4,900</div>
+                        <div class="stat-label">Nuclei Calculated</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">2</div>
+                        <div class="stat-label">Nuclear Interactions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">105</div>
+                        <div class="stat-label">Strength Functions</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>�️ Nuclear Chart</h3>
+                    <p>Explore the global landscape of calculated nuclei with interactive nuclear chart visualization. Color-coded by properties with chain selections.</p>
+                    <button class="btn-primary" onclick="switchSection('nuclear-chart')">View Chart</button>
+                </div>
+                <div class="feature-card">
+                    <h3>�📊 β-Decay Tables</h3>
+                    <p>Explore comprehensive datasets including binding energies, deformation parameters, Q-values, half-lives, and first-forbidden contributions.</p>
+                    <button class="btn-primary" onclick="switchSection('beta-decay')">Explore Data</button>
+                </div>
+                <div class="feature-card">
+                    <h3>📈 Strength Functions</h3>
+                    <p>Visualize Gamow-Teller and first-forbidden charge-exchange strength functions for selected nuclei with K=0 and K=1 decomposition.</p>
+                    <button class="btn-primary" onclick="switchSection('strength-functions')">View Functions</button>
+                </div>
+                <div class="feature-card">
+                    <h3>🔬 Methodology</h3>
+                    <p>Learn about the theoretical framework: axially-deformed RHB + linear response QRPA calculations using DD-PC1 and DD-PCX interactions.</p>
+                    <button class="btn-primary" onclick="switchSection('about')">Learn More</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Nuclear Chart Section -->
+        <section id="nuclear-chart" class="section">
+            <h2>Interactive Nuclear Chart</h2>
+            
+            <div class="controls-panel">
+                <div class="control-group">
+                    <label for="chart-interaction">Interaction:</label>
+                    <select id="chart-interaction">
+                        <option value="DDPC1">DD-PC1</option>
+                        <option value="DDPCX">DD-PCX</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="chart-property">Color by Property:</label>
+                    <select id="chart-property">
+                        <option value="halflife">Half-life (log₁₀ T½)</option>
+                        <option value="qvalue">Q-value</option>
+                        <option value="deformation">Deformation (β₂)</option>
+                        <option value="ff-contribution">FF Contribution</option>
+                        <option value="binding">Binding Energy</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="chart-highlight">Highlight Mode:</label>
+                    <select id="chart-highlight">
+                        <option value="none">None</option>
+                        <option value="isotope">Isotopes (same Z)</option>
+                        <option value="isotone">Isotones (same N)</option>
+                        <option value="isobar">Isobars (same A)</option>
+                        <option value="magic">Magic Numbers</option>
+                    </select>
+                </div>
+                
+                <button class="btn-primary" id="load-chart-btn">Load Chart</button>
+                <button class="btn-secondary" id="reset-chart-btn">Reset View</button>
+            </div>
+
+            <div id="chart-loading" class="loading-spinner" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading nuclear chart...</p>
+            </div>
+
+            <div class="chart-legend" id="chart-legend" style="display: none;">
+                <h4>Legend</h4>
+                <div id="legend-content"></div>
+            </div>
+
+            <div class="nuclear-chart-container">
+                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
+                    💡 <strong>Scroll</strong> to zoom • <strong>Hold Shift + Drag</strong> to pan • <strong>Click</strong> a nucleus for details
+                </p>
+                <canvas id="nuclearChartCanvas"></canvas>
+            </div>
+
+            <!-- Chain Plot Container -->
+            <div class="chart-container" id="chain-plot-container" style="display: none;">
+                <h3 id="chain-plot-title">Chain Properties</h3>
+                <canvas id="chainPlotCanvas"></canvas>
+            </div>
+
+            <!-- Tooltip for nucleus details -->
+            <div id="nucleus-tooltip" class="nucleus-tooltip" style="display: none;">
+                <div class="tooltip-header">
+                    <h3 id="tooltip-title"></h3>
+                    <button class="tooltip-close" onclick="hideNucleusTooltip()">×</button>
+                </div>
+                <div class="tooltip-content">
+                    <div class="tooltip-grid">
+                        <div class="tooltip-item">
+                            <span class="tooltip-label">Protons (Z):</span>
+                            <span class="tooltip-value" id="tooltip-z"></span>
+                        </div>
+                        <div class="tooltip-item">
+                            <span class="tooltip-label">Neutrons (N):</span>
+                            <span class="tooltip-value" id="tooltip-n"></span>
+                        </div>
+                        <div class="tooltip-item">
+                            <span class="tooltip-label">Mass (A):</span>
+                            <span class="tooltip-value" id="tooltip-a"></span>
+                        </div>
+                        <div class="tooltip-item">
+                            <span class="tooltip-label">Binding Energy:</span>
+                            <span class="tooltip-value" id="tooltip-be"></span>
+                        </div>
+                        <div class="tooltip-item">
+                            <span class="tooltip-label">Deformation β₂:</span>
+                            <span class="tooltip-value" id="tooltip-beta2"></span>
+                        </div>
+                        <div class="tooltip-item">
+                            <span class="tooltip-label">Q-value:</span>
+                            <span class="tooltip-value" id="tooltip-q"></span>
+                        </div>
+                        <div class="tooltip-item">
+                            <span class="tooltip-label">Half-life:</span>
+                            <span class="tooltip-value" id="tooltip-hl"></span>
+                        </div>
+                        <div class="tooltip-item">
+                            <span class="tooltip-label">FF Contribution:</span>
+                            <span class="tooltip-value" id="tooltip-ff"></span>
+                        </div>
+                    </div>
+                    <div class="tooltip-actions">
+                        <button class="btn-small" onclick="highlightIsotopes()">
+                            Show Isotopes (Z=<span id="action-z"></span>)
+                        </button>
+                        <button class="btn-small" onclick="highlightIsotones()">
+                            Show Isotones (N=<span id="action-n"></span>)
+                        </button>
+                        <button class="btn-small" onclick="highlightIsobars()">
+                            Show Isobars (A=<span id="action-a"></span>)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <h3>Interactive Nuclear Chart Guide</h3>
+                <div class="guide-grid">
+                    <div class="guide-item">
+                        <strong>🖱️ Click a nucleus</strong>
+                        <p>View detailed properties and select isotopic, isotonic, or isobaric chains</p>
+                    </div>
+                    <div class="guide-item">
+                        <strong>🎨 Color coding</strong>
+                        <p>Change the property displayed via color scale using the dropdown menu</p>
+                    </div>
+                    <div class="guide-item">
+                        <strong>🔍 Zoom & Pan</strong>
+                        <p>Scroll wheel to zoom, click and drag to pan. Reset button returns to full view</p>
+                    </div>
+                    <div class="guide-item">
+                        <strong>✨ Magic numbers</strong>
+                        <p>Z/N = 2, 8, 20, 28, 50, 82, 126 highlighted when selected</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Beta Decay Section -->
+        <section id="beta-decay" class="section">
+            <h2>β-Decay Data Explorer</h2>
+            
+            <div class="controls-panel">
+                <div class="control-group">
+                    <label for="interaction-select">Interaction:</label>
+                    <select id="interaction-select">
+                        <option value="DDPC1">DD-PC1</option>
+                        <option value="DDPCX">DD-PCX</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="chain-type">Chain Type:</label>
+                    <select id="chain-type">
+                        <option value="isotope">Isotopic (constant Z)</option>
+                        <option value="isotone">Isotonic (constant N)</option>
+                        <option value="isobar">Isobaric (constant A)</option>
+                    </select>
+                </div>
+                
+                <div class="control-group" id="z-input-group">
+                    <label for="z-input">Proton Number (Z):</label>
+                    <input type="number" id="z-input" min="1" max="120" value="50" placeholder="e.g., 26 for Fe">
+                </div>
+                
+                <div class="control-group" id="n-input-group" style="display: none;">
+                    <label for="n-input">Neutron Number (N):</label>
+                    <input type="number" id="n-input" min="1" max="200" value="50" placeholder="e.g., 28">
+                </div>
+                
+                <div class="control-group" id="a-input-group" style="display: none;">
+                    <label for="a-input">Mass Number (A):</label>
+                    <input type="number" id="a-input" min="2" max="320" value="100" placeholder="e.g., 56">
+                </div>
+                
+                <div class="control-group">
+                    <label for="plot-type">Visualization:</label>
+                    <select id="plot-type">
+                        <option value="halflife">Half-life</option>
+                        <option value="qvalue">Q-value</option>
+                        <option value="deformation">Deformation β₂</option>
+                        <option value="ff-contribution">FF Contribution</option>
+                        <option value="binding">Binding Energy</option>
+                    </select>
+                </div>
+                
+                <button class="btn-primary" id="load-data-btn">Load Data</button>
+            </div>
+
+            <div id="loading" class="loading-spinner" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading data...</p>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="betaDecayChart"></canvas>
+            </div>
+
+            <div id="data-table-container" class="table-container" style="display: none;">
+                <h3>Data Table</h3>
+                <div class="table-scroll">
+                    <table id="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nucleus</th>
+                                <th>N</th>
+                                <th>Z</th>
+                                <th>A</th>
+                                <th>E(β) [MeV]</th>
+                                <th>β₂</th>
+                                <th>Q [MeV]</th>
+                                <th>log₁₀(T½ [s])</th>
+                                <th>FF %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strength Functions Section -->
+        <section id="strength-functions" class="section">
+            <h2>Strength Function Explorer</h2>
+            
+            <div class="controls-panel">
+                <div class="control-group">
+                    <label for="nucleus-select">Nucleus:</label>
+                    <select id="nucleus-select">
+                        <option value="">Select a nucleus...</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="strength-type">Strength Type:</label>
+                    <select id="strength-type">
+                        <option value="GAMTGAMT">Gamow-Teller (GT)</option>
+                        <option value="NSDRNSDR">First-Forbidden (FF)</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="k-component">K Component:</label>
+                    <select id="k-component">
+                        <option value="Total">Total (K=0 + 2×K=1)</option>
+                        <option value="K0">K=0</option>
+                        <option value="K1">K=1</option>
+                    </select>
+                </div>
+                
+                <button class="btn-primary" id="load-strength-btn">Load Strength Function</button>
+            </div>
+
+            <div id="strength-loading" class="loading-spinner" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading strength function...</p>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="strengthChart"></canvas>
+            </div>
+
+            <div class="info-panel">
+                <h3>About Strength Functions</h3>
+                <p><strong>Gamow-Teller (GT):</strong> Charge-exchange transitions with ΔJ=0,1 (excluding 0→0)</p>
+                <p><strong>First-Forbidden (FF):</strong> Spin-dipole operators with 1⁻ transitions</p>
+                <p><strong>Total Strength:</strong> S<sub>tot</sub>(E) = S<sub>K=0</sub>(E) + 2 S<sub>K=1</sub>(E)</p>
+                <p class="note">Data available for 105 selected nuclei used for contour integration validation.</p>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="section">
+            <h2>About This Project</h2>
+            
+            <div class="content-card">
+                <h3>Overview</h3>
+                <p>This repository aggregates β-decay datasets and r-process simulation outputs supporting the manuscript:</p>
+                <blockquote>
+                    <strong>Large-scale calculations of β-decay rates and implications for r-process nucleosynthesis</strong><br>
+                    A. Ravlić, Y. Saito, and W. Nazarewicz (in preparation, 2025)
+                </blockquote>
+            </div>
+
+            <div class="content-card">
+                <h3>Methodology</h3>
+                <h4>Theoretical Framework</h4>
+                <ul>
+                    <li><strong>RHB + pnQRPA:</strong> Relativistic Hartree-Bogoliubov theory combined with proton-neutron Quasi-Random Phase Approximation</li>
+                    <li><strong>Axial Deformation:</strong> Calculations include axially-deformed nuclear shapes</li>
+                    <li><strong>Interactions:</strong> DD-PC1 and DD-PCX density-dependent point-coupling interactions</li>
+                </ul>
+                
+                <h4>Calculated Properties</h4>
+                <ul>
+                    <li>Binding energies for minimum-energy configurations</li>
+                    <li>Mass quadrupole deformation parameter β₂</li>
+                    <li>β⁻ decay Q-values</li>
+                    <li>Total half-lives (including GT and FF contributions)</li>
+                    <li>First-forbidden contribution percentages</li>
+                    <li>Strength function distributions (selected nuclei)</li>
+                </ul>
+            </div>
+
+            <div class="content-card">
+                <h3>Data Format</h3>
+                <h4>Beta-Decay Tables</h4>
+                <table class="info-table">
+                    <thead>
+                        <tr>
+                            <th>Column</th>
+                            <th>Description</th>
+                            <th>Units</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>N</td>
+                            <td>Neutron number</td>
+                            <td>integer</td>
+                        </tr>
+                        <tr>
+                            <td>Z</td>
+                            <td>Proton number</td>
+                            <td>integer</td>
+                        </tr>
+                        <tr>
+                            <td>E(β)</td>
+                            <td>Binding energy at minimum-energy configuration</td>
+                            <td>MeV</td>
+                        </tr>
+                        <tr>
+                            <td>β₂</td>
+                            <td>Mass quadrupole deformation parameter</td>
+                            <td>dimensionless</td>
+                        </tr>
+                        <tr>
+                            <td>Q</td>
+                            <td>β⁻ Q-value: 0.782 + B(Z,N) − B(Z+1,N−1)</td>
+                            <td>MeV</td>
+                        </tr>
+                        <tr>
+                            <td>HL_log10</td>
+                            <td>log₁₀ of total half-life</td>
+                            <td>log₁₀(seconds)</td>
+                        </tr>
+                        <tr>
+                            <td>FF_percent</td>
+                            <td>First-forbidden contribution to total decay rate</td>
+                            <td>%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="content-card">
+                <h3>Contact</h3>
+                <div class="contact-grid">
+                    <div>
+                        <h4>Ante Ravlić</h4>
+                        <p>Michigan State University / FRIB<br>
+                        University of Zagreb<br>
+                        <a href="mailto:aravlic@phy.hr">aravlic@phy.hr</a></p>
+                    </div>
+                    <div>
+                        <h4>Yukiya Saito</h4>
+                        <p>Michigan State University / FRIB<br>
+                        University of Tennessee / University of Notre Dame<br>
+                        <a href="mailto:saitoy@frib.msu.edu">saitoy@frib.msu.edu</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <h3>Repository</h3>
+                <p>This project is hosted on GitHub. For the complete dataset, code, and more information, visit:</p>
+                <a href="https://github.com/YukiyaSaito/beta_decay_RSN_2025" class="btn-primary" target="_blank">View on GitHub</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Ravlić, Saito, and Nazarewicz. Data available under repository license.</p>
+            <p>Michigan State University / FRIB | University of Tennessee | University of Notre Dame | University of Zagreb</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
